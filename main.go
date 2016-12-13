@@ -185,7 +185,6 @@ func main() {
 			"-quality %v%% "+
 			"-thumbnail %v %v %v",
 			conf.ThumbQuality, conf.ThumbWidth, dstPath, thumbFile)
-		log.Msg("Shell command: %v", shellCmd)
 
 		cmd := exec.Command("bash", "-c", shellCmd)
 		if err := cmd.Run(); err != nil {
