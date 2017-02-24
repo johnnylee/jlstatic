@@ -147,6 +147,20 @@ func (r *Renderer) Image(out *bytes.Buffer, link, title, alt []byte) {
 	out.WriteString(">")
 }
 
+// In the pre-rendering step, we implement our custom clearfix syntax.
+func preRender(input []byte) []byte {
+	sInput := string(input)
+	lines := strings.Split(sInput, "\n")
+	for i, line := range lines {
+		line = strings.Trim(line, "\r") // Carriage returns!
+		if line == `<-->` {
+			lines[i] = `<div class="clearfix"></div>`
+		}
+	}
+	return []byte(strings.Join(lines, "\n"))
+}
+
 func Markdown(input []byte) []byte {
+	input = preRender(input)
 	return blackfriday.Markdown(input, renderer, commonExtensions)
 }
