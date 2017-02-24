@@ -2,9 +2,8 @@ package main
 
 import (
 	"bytes"
-	"fmt"
-	"net/url"
 	"os/exec"
+	"strings"
 
 	"github.com/russross/blackfriday"
 )
@@ -91,27 +90,61 @@ func attrEscape(out *bytes.Buffer, src []byte) {
 }
 
 func (r *Renderer) Image(out *bytes.Buffer, link, title, alt []byte) {
-	URL, err := url.Parse(string(link))
-	if err != nil {
-		r.Html.Image(out, link, title, alt)
+	parts := strings.Split(string(link), " =")
+	if len(parts) == 0 {
 		return
 	}
 
-	class := URL.Query().Get("c")
+	class := ""
+	style := ""
+
+	if len(parts) == 2 {
+		link = []byte(strings.TrimSpace(parts[0]))
+		size := strings.TrimSpace(parts[1])
+		if len(size) > 0 {
+
+			float := size[len(size)-1]
+			if float == 'l' {
+				style = `float:left;`
+				size = size[:len(size)-1]
+			} else if float == 'r' {
+				style = `float:right;`
+				size = size[:len(size)-1]
+			}
+
+			class = "img-" + strings.TrimSpace(size)
+		}
+	}
 
 	out.WriteString(`<img src="`)
 	attrEscape(out, link)
-	out.WriteString(`" alt="`)
+	out.WriteString(`" `)
+
+	out.WriteString(`alt="`)
 	if len(alt) > 0 {
 		attrEscape(out, alt)
 	}
+	out.WriteString(`" `)
+
 	if len(title) > 0 {
-		out.WriteString(`" title="`)
+		out.WriteString(`title="`)
 		attrEscape(out, title)
+		out.WriteString(`" `)
 	}
 
-	// Write the image size class.
-	out.WriteString(fmt.Sprintf(`" class="%v">`, class))
+	if len(class) > 0 {
+		out.WriteString(`class="`)
+		attrEscape(out, []byte(class))
+		out.WriteString(`" `)
+	}
+
+	if len(style) > 0 {
+		out.WriteString(`style="`)
+		attrEscape(out, []byte(style))
+		out.WriteString(`" `)
+	}
+
+	out.WriteString(">")
 }
 
 func Markdown(input []byte) []byte {
