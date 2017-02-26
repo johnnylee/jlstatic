@@ -18,6 +18,7 @@ import (
 type Config struct {
 	RootName     string
 	ThumbWidth   int
+	ThumbHeight  int
 	ThumbQuality int
 }
 
@@ -183,8 +184,9 @@ func main() {
 			"-strip "+
 			"-interlace Plane "+
 			"-quality %v%% "+
-			"-thumbnail %v %v %v",
-			conf.ThumbQuality, conf.ThumbWidth, dstPath, thumbFile)
+			"-thumbnail %vx%v %v %v",
+			conf.ThumbQuality, conf.ThumbWidth, conf.ThumbHeight,
+			dstPath, thumbFile)
 
 		cmd := exec.Command("bash", "-c", shellCmd)
 		if err := cmd.Run(); err != nil {
